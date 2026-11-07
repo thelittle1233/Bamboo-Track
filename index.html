@@ -3616,5 +3616,23 @@
 
         window.addEventListener('DOMContentLoaded', initApp);
     </script>
+
+    <!-- BambooTrack offline support: register a service worker on HTTPS hosting. -->
+    <script>
+    (() => {
+      if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+      const appBase = new URL('./', document.baseURI);
+      const workerUrl = new URL('sw.js', appBase);
+      navigator.serviceWorker.register(workerUrl.href, { scope: appBase.pathname })
+        .then((registration) => {
+          // Check for a changed worker when the app is opened or brought back to the foreground.
+          registration.update().catch(() => {});
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') registration.update().catch(() => {});
+          });
+        })
+        .catch((error) => console.warn('BambooTrack offline setup could not start:', error));
+    })();
+    </script>
 </body>
 </html>
